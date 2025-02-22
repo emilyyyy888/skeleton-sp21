@@ -3,14 +3,15 @@
  */
 public class Collatz {
 
-    /** Buggy implementation of nextNumber! */
+    /**Print the Collatz sequence starting from a given number.
+     * @param n the current number
+     * @return the next number
+     */
     public static int nextNumber(int n) {
-        if (n  == 128) {
-            return 1;
-        } else if (n == 5) {
-            return 3 * n + 1;
+        if (n % 2 == 1) {
+           return 3 * n + 1;
         } else {
-            return n * 2;
+            return n / 2;
         }
     }
 
