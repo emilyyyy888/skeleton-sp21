@@ -109,11 +109,41 @@ public class Model extends Observable {
     public boolean tilt(Side side) {
         boolean changed;
         changed = false;
+        board.setViewingPerspective(side);
 
-        // TODO: Modify this.board (and perhaps this.score) to account
-        // for the tilt to the Side SIDE. If the board changed, set the
-        // changed local variable to true.
+        int size = board.size();
+        for (int col = 0; col < size; col++) {
+            boolean[] merged = new boolean[size];
+            int targetRow = size - 1;
 
+            for (int row = size - 2; row >= 0; row--) {
+                Tile tile = board.tile(col, row);
+                if (tile == null) {
+                    continue;
+                }
+
+                int nxtRow = row;
+                while (nxtRow < targetRow && board.tile(col, nxtRow + 1) == null) {
+                    nxtRow++;
+                }
+
+                if (nxtRow < targetRow) {
+                    Tile above = board.tile(col, nxtRow + 1);
+                    if (above != null && above.value() == tile.value() && !merged[nxtRow + 1]) {
+                        board.move(col, nxtRow + 1, tile);
+                        score += tile.value() * 2;
+                        merged[nxtRow + 1] = true;
+                        changed = true;
+                        continue;
+                    }
+                }
+                if (nxtRow != row) {
+                    board.move(col, nxtRow, tile);
+                    changed = true;
+                }
+            }
+        }
+        board.setViewingPerspective(Side.NORTH);
         checkGameOver();
         if (changed) {
             setChanged();
@@ -137,7 +167,14 @@ public class Model extends Observable {
      *  Empty spaces are stored as null.
      * */
     public static boolean emptySpaceExists(Board b) {
-        // TODO: Fill in this function.
+        int size = b.size();
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                if (b.tile(i, j) == null) {
+                    return true;
+                }
+            }
+        }
         return false;
     }
 
@@ -147,7 +184,14 @@ public class Model extends Observable {
      * given a Tile object t, we get its value with t.value().
      */
     public static boolean maxTileExists(Board b) {
-        // TODO: Fill in this function.
+        for(int i = 0; i < b.size(); i++) {
+            for(int j = 0; j < b.size(); j++) {
+                Tile curr = b.tile(i, j);
+                if (curr != null && curr.value() == MAX_PIECE) {
+                    return true;
+                }
+            }
+        }
         return false;
     }
 
@@ -158,7 +202,30 @@ public class Model extends Observable {
      * 2. There are two adjacent tiles with the same value.
      */
     public static boolean atLeastOneMoveExists(Board b) {
-        // TODO: Fill in this function.
+        if (emptySpaceExists(b)) {
+            return true;
+        }
+        for (int col = 0; col < b.size(); col++) {
+            for (int row = 0; row < b.size(); row++) {
+                Tile curr = b.tile(col, row);
+                //check tiles to right
+                if (col < b.size() - 1) {
+                    Tile right = b.tile(col + 1, row);
+                    if (right != null && right.value() == curr.value()) {
+                        return true;
+                    }
+                }
+
+                //check tiles down
+                if (row > 0) {
+                    Tile down = b.tile(col,row - 1);
+                    if (down != null && down.value() == curr.value()) {
+                        return true;
+                    }
+                }
+            }
+        }
+
         return false;
     }
 
